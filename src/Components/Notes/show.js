@@ -11,7 +11,7 @@ class Show extends React.Component {
 
 	componentDidMount = () => {
 		const id = this.props.match.params.id;
-		axios.get(`http://localhost:3001/notes/${id}`)
+		axios.get(`http://localhost:3001/notes/${id}`, {headers: {'x-auth' : localStorage.getItem('authToken')}})
 			.then(response => {
 				this.setState(() => ({
 					note: response.data
@@ -32,10 +32,20 @@ class Show extends React.Component {
 				})
 		}
 	}
+
+	handleRemoveTag = (tagId) => {
+		const noteId = this.state.note._id
+		axios.delete(`http://localhost:3001/notes/remove?noteId=${noteId}&tagId=${tagId}`)
+			.then(response => {
+				console.log(response.data)
+			})
+			.catch(error => {
+				console.log(error)
+			})
+	}
 	render() {
-		console.log(this.state.note.tags)
 		return(
-			<div>
+			<div>																									
 				<h2>Title : {this.state.note.title}</h2>
 				<span>Category : {this.state.note.category && this.state.note.category.name}</span><br/><br/>
 				<button onClick={this.handleRemove}>Delete</button><Link to={`/notes/edit/${this.props.match.params.id}`}>edit</Link>
@@ -48,11 +58,12 @@ class Show extends React.Component {
 						<tr>
 							<th>Id</th>
 							<th>Title</th>
+							<th>Action</th>
 						</tr>
 					</thead>
 					<tbody>
-							{this.state.note.tags && this.state.note.tags.map(note => {
-								return 	<tr key={note._id}><td>{note && note._id}</td><td>{note && note.name}</td></tr>
+							{this.state.note.tags && this.state.note.tags.map(tagItem => {
+								return 	<tr key={tagItem._id}><td>{tagItem && tagItem.tag._id}</td><td>{tagItem.tag.name}</td><td><button onClick={ () => this.handleRemoveTag(tagItem._id)} className="btn btn-primary btn-sm">X</button></td></tr>
 							})}
 					</tbody>
 				</table>
